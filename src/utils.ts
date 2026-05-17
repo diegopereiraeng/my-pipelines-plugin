@@ -1,5 +1,5 @@
 export const ACCOUNT_ID = '8INL1LHjRmmrZQKdYtlvKA'
-export const PROXY_BASE = '/harness/prod'
+export const PROXY_BASE = '/harness'
 
 export function formatDuration(startTs: number, endTs?: number): string {
   const end = endTs ?? Date.now()
