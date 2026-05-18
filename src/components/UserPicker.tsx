@@ -14,11 +14,11 @@ export function UserPicker({ onSelect }: UserPickerProps) {
     e.preventDefault()
     const trimmed = email.trim().toLowerCase()
     if (!trimmed.includes('@') || !trimmed.includes('.')) {
-      setError('Enter a valid email address')
+      setError('Enter a valid email address, e.g. you@company.com')
       return
     }
-    const name = trimmed.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-    onSelect({ uuid: '', name, email: trimmed })
+    const namePart = trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    onSelect({ uuid: '', name: namePart, email: trimmed })
   }
 
   return (
@@ -35,10 +35,10 @@ export function UserPicker({ onSelect }: UserPickerProps) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} action="#" className="space-y-3">
           <input
             autoFocus
-            type="email"
+            type="text"
             value={email}
             onChange={e => { setEmail(e.target.value); setError('') }}
             placeholder="you@company.com"
