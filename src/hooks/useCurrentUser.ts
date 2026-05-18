@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PluginAPI, usePluginContext } from '@harnessio/idp-plugins-sdk'
 import type { CurrentUserResponse } from '../types'
-import { ACCOUNT_ID, PROXY_ID_BASE } from '../utils'
+import { ACCOUNT_ID, PROXY_BASE } from '../utils'
 
 const CACHE_KEY = 'my-pipelines-user-email'
 const CACHE_UUID_KEY = 'my-pipelines-user-uuid'
@@ -57,7 +57,7 @@ export function useCurrentUser() {
     async function fetchUser() {
       try {
         const res = await PluginAPI.proxyFetch(
-          `${PROXY_ID_BASE}/ng/api/user/currentUser?accountIdentifier=${ACCOUNT_ID}`,
+          `${PROXY_BASE}/ng/api/user/currentUser?accountIdentifier=${ACCOUNT_ID}`,
           { headers: { 'harness-account': ACCOUNT_ID } }
         )
         if (!res.ok) {
