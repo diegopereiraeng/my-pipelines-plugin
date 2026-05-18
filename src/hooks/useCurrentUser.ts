@@ -24,6 +24,7 @@ export function useCurrentUser() {
   })
   const [loading, setLoading] = useState(!email)
   const [error, setError] = useState<string | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   useEffect(() => {
     // context.user contains { email, uuid, name, ... }
@@ -73,9 +74,9 @@ export function useCurrentUser() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to detect user'
-          )
+          const msg = err instanceof Error ? err.message : 'Failed to detect user'
+          setError(msg)
+          setApiError(msg)
         }
       } finally {
         if (!cancelled) {
@@ -90,5 +91,9 @@ export function useCurrentUser() {
     }
   }, [context, email])
 
-  return { email, userId, loading, error }
+  const debugInfo = {
+    contextUser: JSON.stringify(context?.user ?? null),
+    apiError,
+  }
+  return { email, userId, loading, error, debugInfo }
 }

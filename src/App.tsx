@@ -11,7 +11,7 @@ import { ExecutionRow } from './components/ExecutionRow'
 import { SkeletonRow } from './components/SkeletonRow'
 
 function App() {
-  const { email: userEmail, userId, loading: userLoading } = useCurrentUser()
+  const { email: userEmail, userId, loading: userLoading, debugInfo } = useCurrentUser()
   const {
     orgProjects,
     orgs,
@@ -130,6 +130,15 @@ function App() {
           </button>
         </div>
       </div>
+
+      {/* User debug panel — shown when user is not detected */}
+      {!userLoading && !userEmail && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 space-y-1">
+          <p className="font-semibold">⚠ User not detected — debug info:</p>
+          <p><span className="font-medium">context.user:</span> {debugInfo.contextUser}</p>
+          {debugInfo.apiError && <p><span className="font-medium">API error:</span> {debugInfo.apiError}</p>}
+        </div>
+      )}
 
       {/* Error banner */}
       {error && (
