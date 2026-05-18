@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { Search, User, Loader2, CheckCircle2 } from 'lucide-react'
 import { useUserSearch, type HarnessUser } from '../hooks/useUserSearch'
-import { usePluginContext } from '@harnessio/idp-plugins-sdk'
 
 interface UserPickerProps {
   onSelect: (user: HarnessUser) => void
 }
 
 export function UserPicker({ onSelect }: UserPickerProps) {
-  const context = usePluginContext()
   const [query, setQuery] = useState('')
-  const { users, loading, error } = useUserSearch(query, context !== null)
+  const { users, loading, error } = useUserSearch(query)
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { PluginAPI } from '@harnessio/idp-plugins-sdk'
 import { ACCOUNT_ID, PROXY_BASE } from '../utils'
 
+
 export interface HarnessUser {
   uuid: string
   name: string
@@ -16,13 +17,13 @@ interface NgUsersResponse {
   }
 }
 
-export function useUserSearch(query: string, enabled: boolean) {
+export function useUserSearch(query: string) {
   const [users, setUsers] = useState<HarnessUser[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!enabled || query.trim().length < 2) {
+    if (query.trim().length < 2) {
       setUsers([])
       return
     }
@@ -58,7 +59,7 @@ export function useUserSearch(query: string, enabled: boolean) {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [query, enabled])
+  }, [query])
 
   return { users, loading, error }
 }
