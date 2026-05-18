@@ -24,7 +24,6 @@ export function useCurrentUser() {
   })
   const [loading, setLoading] = useState(!email)
   const [error, setError] = useState<string | null>(null)
-  const [apiError, setApiError] = useState<string | null>(null)
 
   useEffect(() => {
     // Wait for PluginAPI.init() — context is null until the IDP frame responds
@@ -79,9 +78,7 @@ export function useCurrentUser() {
         }
       } catch (err) {
         if (!cancelled) {
-          const msg = err instanceof Error ? err.message : 'Failed to detect user'
-          setError(msg)
-          setApiError(msg)
+          setError(err instanceof Error ? err.message : 'Failed to detect user')
         }
       } finally {
         if (!cancelled) {
@@ -96,9 +93,5 @@ export function useCurrentUser() {
     }
   }, [context, email])
 
-  const debugInfo = {
-    contextUser: JSON.stringify(context?.user ?? null),
-    apiError,
-  }
-  return { email, userId, loading, error, debugInfo }
+  return { email, userId, loading, error }
 }
