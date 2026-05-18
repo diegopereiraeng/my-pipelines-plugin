@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, GitBranch } from 'lucide-react'
+import { RefreshCw, AlertTriangle, GitBranch, UserCircle } from 'lucide-react'
 import type { ExecutionFilters, PipelineExecution } from './types'
 import { getExecutionType } from './utils'
 import { useCurrentUser } from './hooks/useCurrentUser'
@@ -11,7 +11,7 @@ import { ExecutionRow } from './components/ExecutionRow'
 import { SkeletonRow } from './components/SkeletonRow'
 
 function App() {
-  const { email: userEmail, userId, loading: userLoading, debugInfo } = useCurrentUser()
+  const { email: userEmail, userId, loading: userLoading } = useCurrentUser()
   const {
     orgProjects,
     orgs,
@@ -131,13 +131,9 @@ function App() {
         </div>
       </div>
 
-      {/* User debug panel — shown when user is not detected */}
+      {/* Email onboarding card — shown when auto-detection fails */}
       {!userLoading && !userEmail && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 space-y-1">
-          <p className="font-semibold">⚠ User not detected — debug info:</p>
-          <p><span className="font-medium">context.user:</span> {debugInfo.contextUser}</p>
-          {debugInfo.apiError && <p><span className="font-medium">API error:</span> {debugInfo.apiError}</p>}
-        </div>
+        <EmailSetup />
       )}
 
       {/* Error banner */}
@@ -234,6 +230,52 @@ function App() {
             </p>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+const CACHE_KEY = 'my-pipelines-user-email'
+
+function EmailSetup() {
+  const [input, setInput] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  function handleSave() {
+    const trimmed = input.trim().toLowerCase()
+    if (!trimmed || !trimmed.includes('@')) return
+    try {
+      localStorage.setItem(CACHE_KEY, trimmed)
+    } catch {
+      // ignore
+    }
+    setSaved(true)
+    setTimeout(() => window.location.reload(), 800)
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <UserCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
+      <div className="flex-1">
+        <p className="text-sm font-medium text-blue-800">Set your Harness email to enable "My Executions" filtering</p>
+        <p className="mt-0.5 text-xs text-blue-600">Enter your Harness account email (e.g. you@company.com). Saved locally — one time only.</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="email"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSave()}
+            placeholder="your.email@company.com"
+            className="flex-1 rounded border border-blue-300 bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            onClick={handleSave}
+            disabled={saved}
+            className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {saved ? 'Saved ✓' : 'Save'}
+          </button>
+        </div>
       </div>
     </div>
   )
