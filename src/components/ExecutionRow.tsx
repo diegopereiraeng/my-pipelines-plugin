@@ -24,9 +24,11 @@ export function ExecutionRow({ execution }: ExecutionRowProps) {
 
   const triggerType =
     execution.executionTriggerInfo?.triggerType ?? 'Unknown'
+  const tb = execution.executionTriggerInfo?.triggeredBy
   const triggeredBy =
-    execution.executionTriggerInfo?.triggeredBy?.extraInfo?.email ??
-    execution.executionTriggerInfo?.triggeredBy?.identifier ??
+    tb?.extraInfo?.email ||
+    (tb?.identifier && tb.identifier !== '_token_' ? tb.identifier : null) ||
+    tb?.uuid ||
     'Unknown'
 
   return (

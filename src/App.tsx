@@ -102,10 +102,14 @@ function App() {
         <div className="flex items-center gap-3">
           <GitBranch className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold text-foreground">My Pipelines</h1>
-          {filters.viewMode === 'mine' && userEmail && (
-            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+          {userLoading ? (
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-400">Detecting user…</span>
+          ) : userEmail ? (
+            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700" title={userId ?? ''}>
               {userEmail}
             </span>
+          ) : (
+            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-600">User not detected</span>
           )}
         </div>
         <div className="flex items-center gap-3">
