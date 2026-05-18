@@ -10,12 +10,19 @@ import { ACCOUNT_ID, PROXY_BASE } from '../utils'
 const BATCH_SIZE = 5
 const POLL_INTERVAL = 30_000
 
+function last7DaysRange() {
+  const now = Date.now()
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000
+  return { startTime: sevenDaysAgo, endTime: now }
+}
+
 async function fetchExecutionsForProject(
   org: string,
   project: string,
   statusFilter?: string
 ): Promise<PipelineExecution[]> {
-  let url = `${PROXY_BASE}/pipeline/api/pipelines/execution/summary?accountIdentifier=${ACCOUNT_ID}&orgIdentifier=${org}&projectIdentifier=${project}&page=0&size=20`
+  const { startTime, endTime } = last7DaysRange()
+  let url = `${PROXY_BASE}/pipeline/api/pipelines/execution/summary?accountIdentifier=${ACCOUNT_ID}&orgIdentifier=${org}&projectIdentifier=${project}&page=0&size=10&startTime=${startTime}&endTime=${endTime}`
   if (statusFilter && statusFilter !== 'All') {
     url += `&status=${statusFilter}`
   }

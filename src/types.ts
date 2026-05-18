@@ -9,8 +9,9 @@ export interface PipelineExecution {
   executionTriggerInfo?: {
     triggerType: string
     triggeredBy: {
+      uuid?: string
       identifier: string
-      extraInfo?: { email?: string }
+      extraInfo?: { email?: string; triggerByType?: string }
     }
   }
   orgIdentifier: string
@@ -54,8 +55,9 @@ export interface PipelineExecutionSummary {
   executionTriggerInfo?: {
     triggerType: string
     triggeredBy: {
+      uuid?: string
       identifier: string
-      extraInfo?: { email?: string }
+      extraInfo?: { email?: string; triggerByType?: string }
     }
   }
 }

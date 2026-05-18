@@ -4,6 +4,7 @@ import type { CurrentUserResponse } from '../types'
 import { ACCOUNT_ID, PROXY_BASE } from '../utils'
 
 const CACHE_KEY = 'my-pipelines-user-email'
+const CACHE_UUID_KEY = 'my-pipelines-user-uuid'
 
 export function useCurrentUser() {
   const context = usePluginContext()
@@ -14,18 +15,28 @@ export function useCurrentUser() {
       return null
     }
   })
+  const [userId, setUserId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(CACHE_UUID_KEY)
+    } catch {
+      return null
+    }
+  })
   const [loading, setLoading] = useState(!email)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Try to get email from context first
-    const contextEmail =
-      (context as unknown as Record<string, unknown>)?.userEmail as string | undefined
+    // context.user contains { email, uuid, name, ... }
+    const contextUser = (context?.user as Record<string, unknown> | null | undefined)
+    const contextEmail = contextUser?.email as string | undefined
+    const contextUuid = contextUser?.uuid as string | undefined
     if (contextEmail) {
       setEmail(contextEmail)
+      if (contextUuid) setUserId(contextUuid)
       setLoading(false)
       try {
         localStorage.setItem(CACHE_KEY, contextEmail)
+        if (contextUuid) localStorage.setItem(CACHE_UUID_KEY, contextUuid)
       } catch {
         // ignore
       }
@@ -51,8 +62,11 @@ export function useCurrentUser() {
         const data = (await res.json()) as CurrentUserResponse
         if (!cancelled && data?.data?.email) {
           setEmail(data.data.email)
+          const uuid = data.data.uuid
+          if (uuid) setUserId(uuid)
           try {
             localStorage.setItem(CACHE_KEY, data.data.email)
+            if (uuid) localStorage.setItem(CACHE_UUID_KEY, uuid)
           } catch {
             // ignore
           }
@@ -76,5 +90,5 @@ export function useCurrentUser() {
     }
   }, [context, email])
 
-  return { email, loading, error }
+  return { email, userId, loading, error }
 }

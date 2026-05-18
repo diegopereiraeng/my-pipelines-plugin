@@ -11,7 +11,7 @@ import { ExecutionRow } from './components/ExecutionRow'
 import { SkeletonRow } from './components/SkeletonRow'
 
 function App() {
-  const { email: userEmail, loading: userLoading } = useCurrentUser()
+  const { email: userEmail, userId, loading: userLoading } = useCurrentUser()
   const {
     orgProjects,
     orgs,
@@ -54,15 +54,17 @@ function App() {
     let result = executions
 
     // Filter by "Mine" view
-    if (filters.viewMode === 'mine' && userEmail) {
+    if (filters.viewMode === 'mine' && (userEmail || userId)) {
       result = result.filter((exec: PipelineExecution) => {
-        const triggeredEmail =
-          exec.executionTriggerInfo?.triggeredBy?.extraInfo?.email
-        const triggeredId =
-          exec.executionTriggerInfo?.triggeredBy?.identifier
+        const tb = exec.executionTriggerInfo?.triggeredBy
+        if (!tb) return false
+        const trigEmail = tb.extraInfo?.email?.toLowerCase()
+        const trigId = tb.identifier?.toLowerCase()
+        const trigUuid = tb.uuid
+        const emailLower = userEmail?.toLowerCase()
         return (
-          triggeredEmail?.toLowerCase() === userEmail.toLowerCase() ||
-          triggeredId?.toLowerCase() === userEmail.toLowerCase()
+          (emailLower && (trigEmail === emailLower || trigId === emailLower)) ||
+          (userId && trigUuid === userId)
         )
       })
     }
@@ -88,7 +90,7 @@ function App() {
     }
 
     return result
-  }, [executions, filters.viewMode, filters.type, filters.search, userEmail])
+  }, [executions, filters.viewMode, filters.type, filters.search, userEmail, userId])
 
   const loading = projectsLoading || execLoading || userLoading
   const error = projectsError || execError
