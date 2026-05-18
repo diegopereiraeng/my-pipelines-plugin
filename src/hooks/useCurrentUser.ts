@@ -93,5 +93,11 @@ export function useCurrentUser() {
     }
   }, [context, email])
 
-  return { email, userId, loading, error }
+  function setManualEmail(value: string) {
+    const v = value.trim().toLowerCase()
+    setEmail(v)
+    try { localStorage.setItem(CACHE_KEY, v) } catch { /* ignore */ }
+  }
+
+  return { email, userId, loading, error, setManualEmail }
 }

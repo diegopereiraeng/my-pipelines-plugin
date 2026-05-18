@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, GitBranch } from 'lucide-react'
+import { useState, useMemo, useCallback, useRef } from 'react'
+import { RefreshCw, AlertTriangle, GitBranch, UserCircle } from 'lucide-react'
 import type { ExecutionFilters, PipelineExecution } from './types'
 import { getExecutionType } from './utils'
 import { useCurrentUser } from './hooks/useCurrentUser'
@@ -11,7 +11,10 @@ import { ExecutionRow } from './components/ExecutionRow'
 import { SkeletonRow } from './components/SkeletonRow'
 
 function App() {
-  const { email: userEmail, userId, loading: userLoading } = useCurrentUser()
+  const { email: userEmail, userId, loading: userLoading, setManualEmail } = useCurrentUser()
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [emailInput, setEmailInput] = useState('')
+  const emailInputRef = useRef<HTMLInputElement>(null)
   const {
     orgProjects,
     orgs,
@@ -102,10 +105,39 @@ function App() {
         <div className="flex items-center gap-3">
           <GitBranch className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold text-foreground">My Pipelines</h1>
-          {userEmail && (
-            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700" title={userId ?? ''}>
+          {userEmail && !editingEmail ? (
+            <button
+              onClick={() => { setEmailInput(userEmail); setEditingEmail(true) }}
+              className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-200"
+              title="Click to change"
+            >
               {userEmail}
-            </span>
+            </button>
+          ) : editingEmail ? (
+            <form
+              className="flex items-center gap-1"
+              onSubmit={e => { e.preventDefault(); if (emailInput.includes('@')) { setManualEmail(emailInput); setEditingEmail(false) } }}
+            >
+              <input
+                ref={emailInputRef}
+                autoFocus
+                type="email"
+                value={emailInput}
+                onChange={e => setEmailInput(e.target.value)}
+                placeholder="your@email.com"
+                className="rounded border border-blue-300 px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button type="submit" className="rounded bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-700">Save</button>
+              <button type="button" onClick={() => setEditingEmail(false)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+            </form>
+          ) : (
+            <button
+              onClick={() => { setEmailInput(''); setEditingEmail(true) }}
+              className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-accent"
+            >
+              <UserCircle className="h-3 w-3" />
+              Set email for &quot;Mine&quot; filter
+            </button>
           )}
         </div>
         <div className="flex items-center gap-3">
