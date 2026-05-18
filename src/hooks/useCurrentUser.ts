@@ -55,10 +55,12 @@ export function useCurrentUser() {
     async function fetchUser() {
       try {
         const res = await PluginAPI.proxyFetch(
-          `${PROXY_BASE}/ng/api/user/currentUser?accountIdentifier=${ACCOUNT_ID}`
+          `${PROXY_BASE}/ng/api/user/currentUser?accountIdentifier=${ACCOUNT_ID}`,
+          { headers: { 'harness-account': ACCOUNT_ID } }
         )
         if (!res.ok) {
-          throw new Error(`Failed to fetch current user: ${res.status}`)
+          const body = await res.text().catch(() => '')
+          throw new Error(`currentUser ${res.status}: ${body.slice(0, 200)}`)
         }
         const data = (await res.json()) as CurrentUserResponse
         if (!cancelled && data?.data?.email) {
