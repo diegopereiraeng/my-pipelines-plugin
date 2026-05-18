@@ -27,6 +27,9 @@ export function useCurrentUser() {
   const [apiError, setApiError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Wait for PluginAPI.init() — context is null until the IDP frame responds
+    if (context === null) return
+
     // context.user contains { email, uuid, name, ... }
     const contextUser = (context?.user as Record<string, unknown> | null | undefined)
     const contextEmail = contextUser?.email as string | undefined
