@@ -33,10 +33,13 @@ export function useUserSearch(query: string, enabled: boolean) {
       setError(null)
       try {
         const res = await PluginAPI.proxyFetch(
-          `${PROXY_BASE}/ng/api/ng-users?accountIdentifier=${ACCOUNT_ID}&searchTerm=${encodeURIComponent(query)}&pageSize=10`,
+          `${PROXY_BASE}/ng/api/user?accountIdentifier=${ACCOUNT_ID}&searchTerm=${encodeURIComponent(query)}&pageSize=10`,
           { headers: { 'harness-account': ACCOUNT_ID } }
         )
-        if (!res.ok) throw new Error(`User search failed: ${res.status}`)
+        if (!res.ok) {
+          const body = await res.text().catch(() => '')
+          throw new Error(`User search failed: ${res.status} ${body.slice(0, 120)}`)
+        }
         const data = (await res.json()) as NgUsersResponse
         if (!cancelled) {
           const list = (data?.data?.content ?? [])
