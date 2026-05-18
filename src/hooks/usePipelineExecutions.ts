@@ -19,7 +19,8 @@ function last7DaysRange() {
 async function fetchExecutionsForProject(
   org: string,
   project: string,
-  statusFilter?: string
+  statusFilter?: string,
+  userEmail?: string
 ): Promise<PipelineExecution[]> {
   const { startTime, endTime } = last7DaysRange()
   let url = `${PROXY_BASE}/pipeline/api/pipelines/execution/summary?accountIdentifier=${ACCOUNT_ID}&orgIdentifier=${org}&projectIdentifier=${project}&page=0&size=10&startTime=${startTime}&endTime=${endTime}`
@@ -27,10 +28,15 @@ async function fetchExecutionsForProject(
     url += `&status=${statusFilter}`
   }
 
+  const filterBody: Record<string, unknown> = { filterType: 'PipelineExecution' }
+  if (userEmail) {
+    filterBody.executorIdentifiers = [userEmail]
+  }
+
   const res = await PluginAPI.proxyFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filterType: 'PipelineExecution' }),
+    body: JSON.stringify(filterBody),
   })
 
   if (!res.ok) {
@@ -49,7 +55,8 @@ async function fetchExecutionsForProject(
 
 async function fetchInBatches(
   projectList: { org: string; project: string }[],
-  statusFilter?: string
+  statusFilter?: string,
+  userEmail?: string
 ): Promise<PipelineExecution[]> {
   const allExecutions: PipelineExecution[] = []
 
@@ -57,7 +64,7 @@ async function fetchInBatches(
     const batch = projectList.slice(i, i + BATCH_SIZE)
     const results = await Promise.allSettled(
       batch.map((p) =>
-        fetchExecutionsForProject(p.org, p.project, statusFilter)
+        fetchExecutionsForProject(p.org, p.project, statusFilter, userEmail)
       )
     )
     for (const result of results) {
@@ -74,7 +81,8 @@ export function usePipelineExecutions(
   projects: Project[],
   selectedOrg: string,
   selectedProject: string,
-  apiStatusFilter: string
+  apiStatusFilter: string,
+  userEmail?: string | null
 ) {
   const [executions, setExecutions] = useState<PipelineExecution[]>([])
   const [loading, setLoading] = useState(false)
@@ -85,6 +93,7 @@ export function usePipelineExecutions(
   const fetchExecutions = useCallback(
     async (isPolling = false) => {
       if (projects.length === 0) return
+      if (!userEmail) return
 
       if (!isPolling) {
         setLoading(true)
@@ -113,7 +122,7 @@ export function usePipelineExecutions(
 
         const statusParam =
           apiStatusFilter !== 'All' ? apiStatusFilter : undefined
-        const results = await fetchInBatches(projectList, statusParam)
+        const results = await fetchInBatches(projectList, statusParam, userEmail ?? undefined)
         setExecutions(results)
         setLastUpdated(new Date())
       } catch (err) {
@@ -124,19 +133,19 @@ export function usePipelineExecutions(
         setLoading(false)
       }
     },
-    [projects, selectedOrg, selectedProject, apiStatusFilter]
+    [projects, selectedOrg, selectedProject, apiStatusFilter, userEmail]
   )
 
   // Initial fetch + re-fetch on filter changes
   useEffect(() => {
-    if (projects.length > 0) {
+    if (projects.length > 0 && userEmail) {
       fetchExecutions()
     }
-  }, [fetchExecutions, projects.length])
+  }, [fetchExecutions, projects.length, userEmail])
 
   // Polling
   useEffect(() => {
-    if (projects.length === 0) return
+    if (projects.length === 0 || !userEmail) return
 
     intervalRef.current = setInterval(() => {
       fetchExecutions(true)
